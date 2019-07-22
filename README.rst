@@ -22,7 +22,8 @@ On a Fedora system the command would be:
 
   sudo dnf install s2i
 
-***Build the base container:***
+Build The Base Container:
+=========================
 
 From the root directory of the git repository, run the following command to build the container:
 
@@ -34,75 +35,38 @@ The default image built will be named:
 
 ``pl-tensorflowapp-sample-centos-python3``
 
-This default container image is a CentOS image that includes Python3
-
+This default container image is a CentOS image that includes Python3.
 
 .. note::
   See 'Makefile' if you'd like to use a different IMAGE_NAME
 
 
 
-***S2I Build & Training***
+S2I Build & Training
+====================
 
 Run the s2i command below to train the model and build the sample application plugin
 
 ``s2i build <source-location> <builder-image-name> <output-image-name>``
 
-Example Command:
+Example Command: (Run from root of project repo)
 
 .. code-block:: bash
 
   s2i build . pl-tensorflowapp-sample-centos-python3 tensorflowapp-sample-centos
 
-If you'd like see additional information when building, append the --loglevel
+If you'd like see additional information when building, append the --loglevel <loglevel_value>
 
 .. code-block:: bash
 
   s2i build . pl-tensorflowapp-sample-centos-python3 tensorflowapp-sample-centos --loglevel 5
 
 
+The output of the above command is a container named:
+``tensorflowapp-sample-centos``
+
 Run
 ***
-
-Make sure you have all the pre-requisites installed
-Need to use the '--user' option to install ChrisApp
-.. code-block:: bash
-
-pip3 install -r requirements.txt --default-timeout=100 --user
-
-.. code-block:: bash
-
-usage: tensorflowapp.py [-h] [--json] [--savejson DIR] [--inputmeta INPUTMETA]
-                        [--saveinputmeta] [--saveoutputmeta] [--prefix PREFIX]
-                        [--inference_path imagedir] inputdir outputdir
-
-Runs the tensorflow application.
-
-positional arguments:
-  inputdir              directory containing the input files
-  outputdir             directory containing the output files/folders
-  inference_path        directory containing the test digit images
-
-optional arguments:
-  -h, --help            show this help message and exit
-  --json                show json representation of app and exit
-  --savejson DIR        save json representation file to DIR and exit
-  --inputmeta INPUTMETA
-                        meta data file containing the arguments passed to this
-                        app
-  --saveinputmeta       save arguments to a JSON file
-  --saveoutputmeta      save output meta data to a JSON file
-  --prefix PREFIX       prefix for file names
-
-
-Build the container
-===================
-
-.. code-block:: bash
-
-    docker build --rm -t billrainford/pl-tensorflowapp .
-
-
 
 Using ``docker run``
 ====================
@@ -129,54 +93,27 @@ Make sure your user is in the docker group if you want to run the docker command
     newgrp docker
 
 
-Assign an "input" directory to ``/incoming`` and an output directory to ``/outgoing``.
-The input is prepopulated with mnist data.
+Run our MNIST model and make an inference
+=========================================
 
 .. code-block:: bash
 
-    mkdir -p input && mkdir -p output
+  docker run tensorflowapp-sample-centos
+
+If everything went well, you should see output similar to this:
+
+::
+
+  Inference Test:
+   Inference value of test Image is :  1
+   Creating new file... /opt/app-root/src/output/mnist-inference
 
 
-**To train the mnist model**.
-Below command will train a mnist model and output the accuracy to a file in ``$(pwd)/output`` folder.
+Debugging
+=========
 
-.. code-block:: bash
-
-    docker run --rm -v $(pwd)/input:/incoming -v $(pwd)/output:/outgoing   \
-            billrainford/pl-tensorflowapp tensorflowapp.py            \
-            --prefix mnist-                                     \
-            /incoming /outgoing
-
-
-**Note: If you are running with SELinux enabled** make sure to tell docker to label the volume with the correct SELinux context prior to performing the 'bind mount' the levels are updated to allow the container process to access the volume
-This is done by appending the ':Z' to your '-v' 'volume bind mount' entries
-
-.. code-block:: bash
-
-    docker run --rm -v $(pwd)/input:/incoming:Z -v $(pwd)/output:/outgoing:Z \
-            billrainford/pl-tensorflowapp tensorflowapp.py \
-            --prefix mnist- \
-            /incoming /outgoing
-
-**To train the mnist model & also run inference**.
-Below command will train a mnist model also run inference on the test image against the mnist model.
+If you'd like to load the container in interactive mode and poke around via bash use the follow command:
 
 .. code-block:: bash
 
-    docker run --rm -v $(pwd)/input:/incoming -v $(pwd)/output:/outgoing   \
-            billrainford/pl-tensorflowapp tensorflowapp.py            \
-            --prefix mnist-                                     \
-            --inference_path /incoming/test/test.png            \
-            /incoming /outgoing
-
-**Note:** If you are running with SELinux enabled make sure to see the note above on appending ':Z' to your 'volume bind mount' entries
-
-.. code-block:: bash
-
-    docker run --rm -v $(pwd)/input:/incoming:Z -v $(pwd)/output:/outgoing:Z \
-            billrainford/pl-tensorflowapp tensorflowapp.py \
-            --prefix mnist- \
-            --inference_path /incoming/test/test.png \
-            /incoming /outgoing
-
-**Note:** Make sure that the host ``$(pwd)/output`` directory is world writable!
+  docker run -it tensorflowapp-sample-centos /bin/bash
