@@ -1,4 +1,4 @@
-IMAGE_NAME = pl-tensorflowapp-sample-centos-python3
+IMAGE_NAME = s2i-local-tensorflow-sample
 
 .PHONY: build
 build:

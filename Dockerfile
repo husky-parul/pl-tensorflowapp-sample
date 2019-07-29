@@ -1,4 +1,3 @@
-
 # Docker file for the tensorflowapp plugin app
 
 #FROM fnndsc/centos-python3:latest
@@ -42,17 +41,10 @@ RUN source scl_source enable rh-python36 && \
     fix-permissions /opt/app-root && \
     rpm-file-permissions
 
-COPY ./.s2i/bin/ /usr/libexec/s2i
+COPY ./.s2i/bin/usage /tmp/scripts/
 
-ENV APPROOT="/opt/app-root/src/tensorflowapp-sample"  VERSION="1"
-COPY ["tensorflowapp-sample", "${APPROOT}"]
-COPY ["requirements.txt", "${APPROOT}"]
+RUN ls -la /tmp/scripts
 
-WORKDIR $APPROOT
-
+COPY ["requirements.txt", "/opt/app-root/src/"]
+RUN pip install --upgrade pip
 RUN pip install -r requirements.txt --default-timeout=100
-
-USER 1001
-
-ENTRYPOINT [ "/usr/libexec/s2i/uid_entrypoint" ]
-CMD ["/usr/libexec/s2i/usage"]

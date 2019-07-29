@@ -13,6 +13,8 @@ import tensorflow as tf
 import numpy as np
 from PIL import Image
 from tensorflow.examples.tutorials.mnist import input_data
+# import input_data
+# import mnist
 
 # import the Chris app superclass
 from chrisapp.base import ChrisApp

@@ -33,7 +33,7 @@ From the root directory of the git repository, run the following command to buil
 
 The default image built will be named:
 
-``pl-tensorflowapp-sample-centos-python3``
+``pl-tensorflowapp-sample-centos-python3`
 
 This default container image is a CentOS image that includes Python3.
 
@@ -104,9 +104,22 @@ If everything went well, you should see output similar to this:
 
 ::
 
-  Inference Test:
-   Inference value of test Image is :  1
-   Creating new file... /opt/app-root/src/output/mnist-inference
+  This is run script
+
+For inference, run
+
+::
+
+  docker run tensorflowapp-sample-centos python3 tensorflowapp-sample/tensorflowapp-inference.py \
+    --prefix mnist- \
+    --inference_path /opt/app-root/src/input/test/test.png \
+    --saved_model_name my_saved_model \
+    /opt/app-root/src/output /opt/app-root/src/output
+
+::
+
+  Inference value of test Image is :  7
+  Creating new file... /opt/app-root/src/output/mnist-inference
 
 
 Debugging
