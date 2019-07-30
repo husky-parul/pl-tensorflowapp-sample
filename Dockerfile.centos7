@@ -32,6 +32,9 @@ ENV PATH=/home/default/.local/bin:/opt/app-root/src/.local/bin/:$PATH
 COPY ./loop.sh /utils/
 RUN chmod +x /utils/loop.sh
 
+COPY ./test.py /utils/
+RUN chmod +x /utils/test.py
+
 ## sourcestrategy doesn't work because git clone doesnt work here
 
 # https://github.com/tensorflow/serving/issues/1015
