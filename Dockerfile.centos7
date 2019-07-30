@@ -87,8 +87,16 @@ RUN exec python /opt/app-root/src/tensorflowapp-sample/tensorflowapp-training.py
 RUN echo "---> Training complete"
 RUN echo "---> Model location: /opt/app-root/src/output/mnist_saved_model/1/"
 
+######################################################################################################################
+RUN echo 'Inside'
+RUN pwd
 
+RUN echo "---> Model location: /opt/app-root/src/output/mnist_saved_model/1/"
+RUN ls -la /opt/app-root/src/output/mnist_saved_model/1/
 
+RUN ls -la /opt/app-root/src/tensorflowapp-sample/
+RUN ls -la /opt/app-root/src/input/test/
+RUN python /opt/app-root/src/tensorflowapp-sample/tensorflowapp-inference.py --prefix mnist- --inference_path /opt/app-root/src/input/test/test.png --saved_model_name my_saved_model /opt/app-root/src/output /opt/app-root/src/output
 
 # TODO: Set the default CMD for the image
 CMD ["/usr/libexec/s2i/usage"]
