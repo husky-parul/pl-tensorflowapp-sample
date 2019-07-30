@@ -1,4 +1,5 @@
 chrisapp
+tensorflow==1.12.0
 pypng
 numpy
 Pillow
