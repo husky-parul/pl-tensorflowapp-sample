@@ -8,7 +8,10 @@ USER root
 ENV BAZEL_VERSION=$LIBRARY_VERSION
 
 ARG PYTHON_VERSION=3.6
-ARG TF_PACKAGE=https://storage.googleapis.com/tensorflow/linux/cpu/tensorflow-1.7.0-cp36-cp36m-linux_x86_64.whl
+## ARG TF_PACKAGE=https://storage.googleapis.com/tensorflow/linux/cpu/tensorflow-1.7.0-cp36-cp36m-linux_x86_64.whl
+ARG TF_PACKAGE=https://tensorflow.pypi.thoth-station.ninja/index/centos7/cuda9.2+jemalloc/simple/tensorflow/tensorflow-1.9.0-cp36-cp36m-manylinux1_x86_64.whl
+
+
 ENV PYTHON_VERSION=$PYTHON_VERSION
 ENV TF_PACKAGE $TF_PACKAGE
 
@@ -89,7 +92,7 @@ RUN exec python /opt/app-root/src/tensorflowapp-sample/tensorflowapp-training.py
 
 RUN echo "---> Training complete"
 RUN echo "---> Model location: /opt/app-root/src/output/mnist_saved_model/1/"
-RUN /utils/loop.sh
+## RUN /utils/loop.sh
 
 # TODO: Set the default CMD for the image
 CMD ["/usr/libexec/s2i/usage"]
