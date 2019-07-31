@@ -38,6 +38,8 @@ RUN chmod +x /utils/loop.sh
 COPY ./test.py /utils/
 RUN chmod +x /utils/test.py
 
+RUN pip install Pillow
+
 ## sourcestrategy doesn't work because git clone doesnt work here
 
 # https://github.com/tensorflow/serving/issues/1015
