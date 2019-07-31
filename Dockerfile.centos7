@@ -9,7 +9,7 @@ ENV BAZEL_VERSION=$LIBRARY_VERSION
 
 ARG PYTHON_VERSION=3.6
 ## ARG TF_PACKAGE=https://storage.googleapis.com/tensorflow/linux/cpu/tensorflow-1.7.0-cp36-cp36m-linux_x86_64.whl
-ARG TF_PACKAGE=https://tensorflow.pypi.thoth-station.ninja/index/centos7/cuda9.2+jemalloc/simple/tensorflow/tensorflow-1.9.0-cp36-cp36m-manylinux1_x86_64.whl
+ARG TF_PACKAGE=https://tensorflow.pypi.thoth-station.ninja/index/centos7/jemalloc/simple/tensorflow/tensorflow-1.9.0-cp27-cp27mu-manylinux1_x86_64.whl
 
 
 ENV PYTHON_VERSION=$PYTHON_VERSION
@@ -54,8 +54,11 @@ RUN yum install -y yum-utils tar tree git curl wget \
 	&& curl "https://bootstrap.pypa.io/get-pip.py" -o "get-pip.py" \
     && if [ "$PYTHON_VERSION" = "2.7" ] ; then python$PYTHON_VERSION get-pip.py ; fi \
     && if [[ $PYTHON_VERSION == 3.* ]] ; then ls -l /opt/rh/rh-python${PYTHON_VERSION//.}/root/usr/lib64/ && export LD_LIBRARY_PATH="/opt/rh/rh-python${PYTHON_VERSION//.}/root/usr/lib64/:/usr/local/lib${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}" && echo $LD_LIBRARY_PATH && export PYTHON_LIB_PATH=/opt/rh/rh-python${PYTHON_VERSION//.}/root/usr/lib/python${PYTHON_VERSION}/site-packages && echo $PYTHON_LIB_PATH && rm -fr /usr/bin/python && ln -s /opt/rh/rh-python${PYTHON_VERSION//.}/root/usr/bin/python${PYTHON_VERSION} /usr/bin/python && ls -l /usr/bin/python* && python get-pip.py && rm -fr /usr/bin/pip && ln -s /opt/rh/rh-python${PYTHON_VERSION//.}/root/usr/bin/pip /usr/bin/pip; fi \
-    && pip install --upgrade pip==19.0.1 \
+    && pip install --upgrade pip==19.2.1 \
     && pip --no-cache-dir install ${TF_PACKAGE}
+
+RUN pip install Pillow
+
 
 
 USER 1001
