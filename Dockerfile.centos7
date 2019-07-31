@@ -1,19 +1,29 @@
 FROM centos/s2i-base-centos7
 
-MAINTAINER Subin Modeel <smodeel@redhat.com>
+MAINTAINER Parul Singh <parsingh@redhat.com>
 
-USER root
+### Setup user for build execution and application runtime
+
+ENV APPROOT=/opt/app-root  VERSION="1"
+ENV PATH=${APPROOT}/bin:${PATH} HOME=${APPROOT}
+
+Run mkdir ${APPROOT}/bin
+RUN mkdir ${APPROOT}/etc/passwd
+
+RUN chmod -R u+x ${APPROOT}/bin && \
+    chgrp -R 0 ${APPROOT} && \
+    chmod -R g=u ${APPROOT} /etc/passwd
+
+COPY ./loop.sh /utils/
+RUN chmod +x /utils/loop.sh
 
 ## LIBRARY_VERSION comes from template
 ENV BAZEL_VERSION=$LIBRARY_VERSION
 
 ARG PYTHON_VERSION=3.6
-## ARG TF_PACKAGE=https://storage.googleapis.com/tensorflow/linux/cpu/tensorflow-1.7.0-cp36-cp36m-linux_x86_64.whl
 ARG TF_PACKAGE=https://tensorflow.pypi.thoth-station.ninja/index/centos7/jemalloc/simple/tensorflow/tensorflow-1.9.0-cp27-cp27mu-manylinux1_x86_64.whl
-
-
 ENV PYTHON_VERSION=$PYTHON_VERSION
-ENV TF_PACKAGE $TF_PACKAGE
+ENV TF_PACKAGE=$TF_PACKAGE
 
 ENV TEST_CMD="import tensorflow as tf ; a = tf.constant([1.0, 2.0, 3.0, 4.0, 5.0, 6.0], shape=[2, 3], name='a') ; \
 b = tf.constant([1.0, 2.0, 3.0, 4.0, 5.0, 6.0], shape=[3, 2], name='b') ; c = tf.matmul(a, b) ; \
@@ -32,11 +42,7 @@ ENV PYTHON_BIN_PATH=/usr/bin/python
 ENV PYTHON_LIB_PATH=/usr/lib64/python$PYTHON_VERSION/site-packages
 ENV JAVA_HOME=/usr/lib/jvm/java-1.8.0
 ENV PATH=/home/default/.local/bin:/opt/app-root/src/.local/bin/:$PATH
-COPY ./loop.sh /utils/
-RUN chmod +x /utils/loop.sh
 
-COPY ./test.py /utils/
-RUN chmod +x /utils/test.py
 
 ## sourcestrategy doesn't work because git clone doesnt work here
 
@@ -57,11 +63,16 @@ RUN yum install -y yum-utils tar tree git curl wget \
     && pip install --upgrade pip==19.2.1 \
     && pip --no-cache-dir install ${TF_PACKAGE}
 
-RUN pip install Pillow
+RUN source scl_source enable rh-python36 && \
+    virtualenv /opt/app-root && \
+    chown -R 10001:0 /opt/app-root && \
+    fix-permissions /opt/app-root && \
+    rpm-file-permissions
 
+RUN pip install Pillow numpy pypng chrisapp
 
+RUN pip --no-cache-dir install ${TF_PACKAGE}
 
-USER 1001
 # Make the default PWD somewhere that the user can write. This is
 # useful when connecting with 'oc run' and starting a 'spark-shell',
 # which will likely try to create files and directories in PWD and
@@ -69,35 +80,45 @@ USER 1001
 
 ## Adding application code into the image
 
-ENV APPROOT="/opt/app-root/src/tensorflowapp-sample"  VERSION="1"
 RUN echo "---> Installing application source"
-COPY ["tensorflowapp-sample", "${APPROOT}"]
+COPY ["tensorflowapp-sample", "${APPROOT}/src/tensorflowapp-sample"]
 
-COPY ["requirements.txt", "${APPROOT}"]
-WORKDIR $APPROOT
+RUN ls -la ${APPROOT}
 
+#COPY ["requirements.txt", "${APPROOT}"]
 
 RUN echo "---> Create output dir: /opt/app-root/src/output"
 RUN mkdir /opt/app-root/src/output
 
 RUN echo "---> Create input dir: /opt/app-root/src/input"
 RUN mkdir /opt/app-root/src/input
+
 COPY ["input", "/opt/app-root/src/input"]
-
-
 RUN ls -la /opt/app-root/src/input
 
-
-RUN pip install -r requirements.txt --default-timeout=100 --user
+### user name recognition at runtime w/ an arbitrary uid - for OpenShift deployments
 
 RUN echo "---> Training the model"
 RUN exec python /opt/app-root/src/tensorflowapp-sample/tensorflowapp-training.py --prefix mnist- --saved_model_name mnist_saved_model /opt/app-root/src/input /opt/app-root/src/output
 
 RUN echo "---> Training complete"
 RUN echo "---> Model location: /opt/app-root/src/output/mnist_saved_model/1/"
-## RUN /utils/loop.sh
 
-# TODO: Set the default CMD for the image
-CMD ["/usr/libexec/s2i/usage"]
+RUN chown -R 10001:10001 /opt/app-root/src/
+RUN umask 000
+RUN chmod -R u+w /opt/app-root/src/
+RUN chmod -R o+w /opt/app-root/src/
+
+RUN ls -la /opt/app-root/src/tensorflowapp-sample
+RUN ls -la /opt/app-root/src/input
+RUN ls -la /opt/app-root/src/output
+
+
+### Containers should NOT run as root as a good practice
+
+USER 10001
+WORKDIR ${APP_ROOT}
+
+#CMD ["/usr/libexec/s2i/usage"]
 
 
