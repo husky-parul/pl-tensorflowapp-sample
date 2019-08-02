@@ -10,6 +10,9 @@
 # If the 'billrainford/tensorflowapp-sample' assemble script is executed with the '-h' flag, print the usage.
 set -ex
 
+echo "---> Running as UID:"
+echo $UID
+
 if [[ "$1" == "-h" ]]; then
 	exec /usr/libexec/s2i/usage
 fi
@@ -22,20 +25,23 @@ if [ "$(ls /tmp/artifacts/ 2>/dev/null)" ]; then
 fi
 
 echo "---> List /tmp"
-ls  /tmp/.
+ls -l /tmp/.
 
 echo "---> List /tmp/src"
-ls  /tmp/src/.
+ls -l /tmp/src/.
 
 echo "---> Installing application source"
 
 cp -Rf /tmp/src/. /opt/app-root/src/
 
 echo "---> List /opt/app-root/src"
-ls  /opt/app-root/src/
+ls -l /opt/app-root/src/
 
 echo "---> Create output dir: /opt/app-root/src/output"
 mkdir /opt/app-root/src/output
+
+echo "---> List /opt/app-root/src/output"
+ls -l /opt/app-root/src/output
 
 echo "---> Training the model"
 exec python /opt/app-root/src/tensorflowapp-sample/tensorflowapp-training.py --prefix mnist- --saved_model_name my_saved_model /opt/app-root/src/input /opt/app-root/src/output

@@ -52,4 +52,6 @@ WORKDIR $APPROOT
 
 RUN pip install -r requirements.txt --default-timeout=100
 
+USER 1001
+
 CMD ["/usr/libexec/s2i/usage"]
