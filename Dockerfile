@@ -54,4 +54,5 @@ RUN pip install -r requirements.txt --default-timeout=100
 
 USER 1001
 
+ENTRYPOINT [ "/usr/libexec/s2i/uid_entrypoint" ]
 CMD ["/usr/libexec/s2i/usage"]
