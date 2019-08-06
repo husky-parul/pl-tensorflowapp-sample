@@ -69,18 +69,25 @@ class Tensorflowapp(ChrisApp):
         """
         self.run_tensorflow_app(options)
 
+    def getImagePath(self,options):
+        for (dirpath, dirnames, filenames) in os.walk(options.inputdir):
+            for name in filenames:
+                #Right now there is just one image for inference
+                return  os.path.join(dirpath, name)
+                
     def run_tensorflow_app(self, options):
         digit_image = None
-        if options.inference_path:
-            str_path = os.path.abspath(options.inference_path)
-            infer_image = Image.open(str_path)
-            np_image = np.array(infer_image)
-            np_image = np_image.flatten() / 255.0
-            digit_image = np.reshape(np_image, (1, 784))
-            print("Test Image shape: ", digit_image.shape)
+        str_path = self.getImagePath(options)
+        print("Inference image path: ", str_path)
+        print("Inference image provided? ", os.path.exists(str_path))
+        infer_image = Image.open(str_path)
+        np_image = np.array(infer_image)
+        np_image = np_image.flatten() / 255.0
+        digit_image = np.reshape(np_image, (1, 784))
+        print("Test Image shape: ", digit_image.shape)
 
         # Load the graph model
-        str_modelpath = os.path.join(options.inputdir, options.saved_model_name, self.VERSION,)
+        str_modelpath = os.path.join("/opt/app-root/src/output", options.saved_model_name, self.VERSION,)
         #str_modelpath = os.path.join(options.inputdir, options.saved_model_name, self.VERSION, "saved_model.pb")
         #graph = load_graph(str_modelpath, options.prefix)
 
@@ -204,19 +211,19 @@ class Tensorflowapp(ChrisApp):
         with open(str_outpath, 'w') as f:
             f.write(str(value))
 
-    def load_graph(frozen_graph_filename, name_prefix="prefix"):
-        # We load the protobuf file from the disk and parse it to retrieve the
-        # unserialized graph_def
-        with tf.gfile.GFile(frozen_graph_filename, "rb") as f:
-            graph_def = tf.GraphDef()
-            graph_def.ParseFromString(f.read())
+def load_graph(frozen_graph_filename, name_prefix="prefix"):
+    # We load the protobuf file from the disk and parse it to retrieve the
+    # unserialized graph_def
+    with tf.gfile.GFile(frozen_graph_filename, "rb") as f:
+        graph_def = tf.GraphDef()
+        graph_def.ParseFromString(f.read())
 
-        # Then, we import the graph_def into a new Graph and return it
-        with tf.Graph().as_default() as graph:
-            # The name var will prefix every op/nodes in your graph
-            # Since we load everything in a new graph, this is not needed
-            tf.import_graph_def(graph_def, name=name_prefix)
-        return graph
+    # Then, we import the graph_def into a new Graph and return it
+    with tf.Graph().as_default() as graph:
+        # The name var will prefix every op/nodes in your graph
+        # Since we load everything in a new graph, this is not needed
+        tf.import_graph_def(graph_def, name=name_prefix)
+    return graph
 
 
 # ENTRYPOINT
