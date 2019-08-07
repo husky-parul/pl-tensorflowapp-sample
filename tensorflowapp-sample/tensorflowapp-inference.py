@@ -78,6 +78,9 @@ class Tensorflowapp(ChrisApp):
     def run_tensorflow_app(self, options):
         digit_image = None
         str_path = self.getImagePath(options)
+        if options.inference_path:
+            str_path = os.path.abspath(options.inference_path)
+        
         print("Inference image path: ", str_path)
         print("Inference image provided? ", os.path.exists(str_path))
         infer_image = Image.open(str_path)

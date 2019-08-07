@@ -43,7 +43,6 @@ ENV PYTHON_LIB_PATH=/usr/lib64/python$PYTHON_VERSION/site-packages
 ENV JAVA_HOME=/usr/lib/jvm/java-1.8.0
 ENV PATH=/home/default/.local/bin:/opt/app-root/src/.local/bin/:$PATH
 
-
 ## sourcestrategy doesn't work because git clone doesnt work here
 
 # https://github.com/tensorflow/serving/issues/1015
@@ -69,9 +68,9 @@ RUN source scl_source enable rh-python36 && \
     fix-permissions /opt/app-root && \
     rpm-file-permissions
 
-RUN pip install Pillow numpy pypng chrisapp
+#RUN pip install Pillow numpy pypng chrisapp
 
-RUN pip --no-cache-dir install ${TF_PACKAGE}
+
 
 # Make the default PWD somewhere that the user can write. This is
 # useful when connecting with 'oc run' and starting a 'spark-shell',
@@ -82,10 +81,11 @@ RUN pip --no-cache-dir install ${TF_PACKAGE}
 
 RUN echo "---> Installing application source"
 COPY ["tensorflowapp-sample", "${APPROOT}/src/tensorflowapp-sample"]
+COPY ["requirements.txt", "${APPROOT}/src/tensorflowapp-sample"]
 
-RUN ls -la ${APPROOT}
-
-#COPY ["requirements.txt", "${APPROOT}"]
+WORKDIR ${APP_ROOT}/src/tensorflowapp-sample
+RUN pip install -r requirements.txt
+RUN pip --no-cache-dir install ${TF_PACKAGE}
 
 RUN echo "---> Create output dir: /opt/app-root/src/output"
 RUN mkdir /opt/app-root/src/output
@@ -94,7 +94,6 @@ RUN echo "---> Create input dir: /opt/app-root/src/input"
 RUN mkdir /opt/app-root/src/input
 
 COPY ["input", "/opt/app-root/src/input"]
-RUN ls -la /opt/app-root/src/input
 
 ### user name recognition at runtime w/ an arbitrary uid - for OpenShift deployments
 
@@ -109,16 +108,9 @@ RUN umask 000
 RUN chmod -R u+w /opt/app-root/src/
 RUN chmod -R o+w /opt/app-root/src/
 
-RUN ls -la /opt/app-root/src/tensorflowapp-sample
-RUN ls -la /opt/app-root/src/input
-RUN ls -la /opt/app-root/src/output
-
-
 ### Containers should NOT run as root as a good practice
 
 USER 10001
 WORKDIR ${APP_ROOT}
-
-#CMD ["/usr/libexec/s2i/usage"]
 
 
