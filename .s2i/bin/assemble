@@ -10,9 +10,6 @@
 # If the 'billrainford/tensorflowapp-sample' assemble script is executed with the '-h' flag, print the usage.
 set -ex
 
-echo "---> Running as UID:"
-echo $UID
-
 if [[ "$1" == "-h" ]]; then
 	exec /usr/libexec/s2i/usage
 fi
@@ -25,23 +22,31 @@ if [ "$(ls /tmp/artifacts/ 2>/dev/null)" ]; then
 fi
 
 echo "---> List /tmp"
-ls -l /tmp/.
+ls  /tmp/.
 
 echo "---> List /tmp/src"
-ls -l /tmp/src/.
+ls  /tmp/src/.
 
 echo "---> Installing application source"
 
 cp -Rf /tmp/src/. /opt/app-root/src/
 
 echo "---> List /opt/app-root/src"
-ls -l  /opt/app-root/src/
+ls  /opt/app-root/src/
 
 echo "---> Create output dir: /opt/app-root/src/output"
 mkdir /opt/app-root/src/output
 
+ls -la /opt/app-root/src/
+
 echo "---> Training the model"
-exec python /opt/app-root/src/tensorflowapp-sample/tensorflowapp-training.py --prefix mnist- --saved_model_name my_saved_model /opt/app-root/src/input /opt/app-root/src/output
+python /opt/app-root/src/tensorflowapp-sample/tensorflowapp-training.py --prefix mnist- --saved_model_name my_saved_model /opt/app-root/src/input /opt/app-root/src/output
+
+echo "---> Sleeping after training"
+sleep 10;
 
 echo "---> Training complete"
 echo "---> Model location: /opt/app-root/src/output/my_saved_model/1/"
+
+echo "---> Check model"
+ls -la /opt/app-root/src/output/my_saved_model/1/

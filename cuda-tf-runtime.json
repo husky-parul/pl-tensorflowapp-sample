@@ -108,77 +108,6 @@
 					}
 				}
 			}
-		},
-		{
-			"apiVersion": "v1",
-			"kind": "Pod",
-			"metadata": {
-				"name": "${APPLICATION_NAME}",
-				"labels": {
-					"appTypes": "cuda-tf-runtime",
-					"appName": "${APPLICATION_NAME}"
-				}
-			},
-			"spec": {
-				"restartPolicy": "OnFailure",
-				"containers": [{
-					"name": "${APPLICATION_NAME}",
-					"image": "${APPLICATION_NAME}:${APPLICATION_IMAGE_TAG}",
-					"command": [
-						"python", 
-						"/opt/app-root/src/tensorflowapp-sample/tensorflowapp-inference.py",
-						"--prefix",
-						"mnist-",
-						"--inference_path",
-						"/opt/app-root/src/input/test/test.png",
-						"--saved_model_name",
-						"mnist_saved_model",
-						"/opt/app-root/src/output", 
-						"/opt/app-root/src/output"],
-					"env": [{
-							"name": "NVIDIA_VISIBLE_DEVICES",
-							"value": "all"
-						},
-						{
-							"name": "NVIDIA_DRIVER_CAPABILITIES",
-							"value": "compute,utility"
-						},
-						{
-							"name": "NVIDIA_REQUIRE_CUDA",
-							"value": "cuda>=9.0"
-						},
-						{
-							"name": "TEST_LOOP",
-							"value": "${TEST_LOOP}"
-						},
-						{
-							"name": "HOST_ON_HTTP_SERVER",
-							"value": "${HOST_ON_HTTP_SERVER}"
-						},
-						{
-							"name": "LIBRARY_VERSION",
-							"value": "${LIBRARY_VERSION}"
-						},
-						{
-							"name": "CUSTOM_BUILD",
-							"value": "${CUSTOM_BUILD}"
-						}
-					],
-					"securityContext": {
-						"allowPrivilegeEscalation": false,
-						"capabilities": {
-							"drop": [
-								"ALL"
-							]
-						}
-					},
-					"resources": {
-						"limits": {
-							"nvidia.com/gpu": "1"
-						}
-					}
-				}]
-			}
 		}
 	],
 	"parameters": [{
@@ -204,7 +133,7 @@
 		{
 			"name": "SOURCE_REPOSITORY_BRANCH",
 			"description": "Git repository branch for source.",
-			"value": "os-gpu",
+			"value": "gpu-s2i",
 			"required": true
 		},
 		{

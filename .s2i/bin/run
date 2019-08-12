@@ -8,6 +8,8 @@
 #
 
 set -e
+id
+whoami
 
 echo "Running app..."
 

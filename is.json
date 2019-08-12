@@ -1,0 +1,95 @@
+{
+    "kind": "Template",
+    "apiVersion": "v1",
+    "metadata": {
+       "name": "tf-gpu"
+    },
+    "labels": {
+       "application": "tf-gpu",
+       "createdBy": "tf-gpu"
+    },
+    "objects": [
+       {
+             "apiVersion": "v1",
+             "kind": "Pod",
+             "metadata": {
+                 "name": "tf-gpu",
+                 "labels": {
+                     "appTypes": "tf-gpu",
+                     "appName": "tf-gpu"
+                 }
+             },
+             "spec": {
+                 "restartPolicy": "OnFailure",
+                 "containers": [{
+                     "name": "tf-gpu",
+                     "image": "docker-registry.default.svc:5000/ext-image-push/cuda-tf-runtime-36-redhat:centos7-1-56-9.0-cudnn7-devel-centos7",
+                     "command": ["container-entrypoint", "/utils/loop.sh"],
+                     "env": [{
+                             "name": "NVIDIA_VISIBLE_DEVICES",
+                             "value": "all"
+                         },
+                         {
+                             "name": "NVIDIA_DRIVER_CAPABILITIES",
+                             "value": "compute,utility"
+                         },
+                         {
+                             "name": "NVIDIA_REQUIRE_CUDA",
+                             "value": "cuda>=9.0"
+                         },
+                         {
+                             "name": "TEST_LOOP",
+                             "value": "${TEST_LOOP}"
+                         },
+                         {
+                             "name": "HOST_ON_HTTP_SERVER",
+                             "value": "${HOST_ON_HTTP_SERVER}"
+                         },
+                         {
+                             "name": "LIBRARY_VERSION",
+                             "value": "${LIBRARY_VERSION}"
+                         },
+                         {
+                             "name": "CUSTOM_BUILD",
+                             "value": "${CUSTOM_BUILD}"
+                         }
+                     ],
+                     "securityContext": {
+                         "allowPrivilegeEscalation": false,
+                         "capabilities": {
+                             "drop": [
+                                 "ALL"
+                             ]
+                         }
+                     },
+                     "resources": {
+                         "limits": {
+                             "nvidia.com/gpu": "1"
+                         }
+                     }
+                 }]
+             }
+         }
+    ],
+    "parameters": [
+    {
+       "name": "LIBRARY_VERSION",
+       "description": "LIBRARY_VERSION",
+       "value": "0.22.0",
+       "required": true
+    },
+    {
+       "name": "CUSTOM_BUILD",
+       "description": "CUSTOM_BUILD",
+       "value": "cd /tmp/bazel && ./compile ",
+       "required": true
+    },
+    {
+       "name": "GPU_COUNT",
+       "description": "GPU_COUNT",
+       "value": "1",
+       "required": true
+    }
+ ]
+ }
+ 

@@ -1,0 +1,133 @@
+{
+    "kind":"Template",
+    "apiVersion": "v1",
+    "metadata":{
+        "name": "tensorflow-sample",
+        "annotations":{
+            "description":"Template to build tensorflow sample app",
+            "tags": "tensorflow-sample"
+        }
+    },
+    "objects": [
+        {
+			"kind": "ImageStream",
+			"apiVersion": "v1",
+			"metadata": {
+				"name": "${APPLICATION_NAME}",
+				"labels": {
+					"appTypes": "tf-app",
+					"appName": "${APPLICATION_NAME}"
+				}
+			},
+			"spec": {
+				"lookupPolicy": {
+					"local": true
+				}
+			}
+		},
+        {
+			"kind": "BuildConfig",
+			"apiVersion": "v1",
+			"metadata": {
+				"name": "${APPLICATION_NAME}",
+				"labels": {
+					"appTypes": "tf-app",
+					"appName": "${APPLICATION_NAME}"
+				}
+			},
+			"spec": {
+				"triggers": [{
+						"type": "ConfigChange"
+					},
+					{
+						"type": "ImageChange"
+					},
+					{
+						"type": "Generic",
+						"generic": {
+							"secret": "${GENERIC_WEBHOOK_SECRET}"
+						}
+					}
+				],
+				"source": {
+					"type": "Git",
+					"git": {
+						"uri": "${SOURCE_REPOSITORY}",
+						"ref": "${SOURCE_REPOSITORY_BRANCH}"
+					}
+				},
+				"strategy": {
+					"sourceStrategy": {
+						"from": {
+							"kind": "ImageStreamTag",
+							"name": "cuda-tf-runtime-36-redhat:centos7-1-56-9.0-cudnn7-devel-centos7"
+                        },
+                        "forcePull": true
+					}
+				},
+				"output": {
+					"to": {
+						"kind": "ImageStreamTag",
+						"name": "${APPLICATION_NAME}:${APPLICATION_IMAGE_TAG}"
+					}
+				},
+				"resources": {
+					"limits": {
+						"cpu": "4",
+                        "memory": "8Gi",
+                        "nvidia.com/gpu": "1"
+					},
+					"requests": {
+						"cpu": "4",
+                        "memory": "8Gi",
+                        "nvidia.com/gpu": "1"
+					}
+				}
+			}
+        }
+    ],
+    "parameters": [{
+        "name": "APPLICATION_NAME",
+        "description": "The name of the application.",
+        "value": "tensorflow-app",
+        "from": "[a-zA-Z0-9]{10}",
+        "required": true
+    },
+    {
+        "name": "S2I_BASE_IMAGE",
+        "description": "build-s2i-image:base, cuda:10.0-cudnn7-devel-rhel7",
+        "value": "cuda-tf-runtime-36-redhat:centos7-1-56-9.0-cudnn7-devel-centos7",
+        "required": true
+    },
+    {
+        "name": "S2I_BASE_IMAGE_KIND",
+        "description": "DockerImage, ImageStreamTag",
+        "value": "ImageStreamTag",
+        "required": true
+    },
+    {
+        "name": "DOCKER_FILE_PATH",
+        "description": "Dockerfile.centos7, Dockerfile.fedora28, Dockerfile.rhel75.",
+        "value": "Dockerfile",
+        "required": true
+    },
+    {
+        "name": "SOURCE_REPOSITORY",
+        "description": "Git repository for source.",
+        "value": "https://github.com/husky-parul/pl-tensorflowapp-sample.git",
+        "required": true
+    },
+    {
+        "name": "SOURCE_REPOSITORY_BRANCH",
+        "description": "Git repository branch for source.",
+        "value": "gpu-s2i",
+        "required": true
+    },
+    {
+        "name": "APPLICATION_IMAGE_TAG",
+        "description": "The tag of application image.",
+        "value": "1",
+        "from": "[a-zA-Z0-9]{10}",
+        "required": true
+    }]
+}

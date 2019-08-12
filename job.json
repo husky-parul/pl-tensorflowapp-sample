@@ -1,0 +1,60 @@
+{
+    "apiVersion": "batch/v1",
+    "kind": "Job",
+    "metadata": {
+        "name": "tf-gpu"
+    },
+    "spec": {
+        "ttlSecondsAfterFinished": 20,
+        "activeDeadlineSeconds": 3600,
+        "template": {
+            "metadata": {
+                 "labels":{
+                    "job-origin":"pman"
+                },
+                "name": "tf-gpu"
+            },
+            "spec": {
+                "nodeSelector": {
+                    "kubernetes.io/hostname": "g001"
+                },
+                "restartPolicy": "Never",
+                "containers": [{
+                    "name": "tf-gpu",
+                    "image": "docker-registry.default.svc:5000/ext-image-push/cuda-tf-runtime-36-redhat:centos7-1-56-9.0-cudnn7-devel-centos7",
+                    "command": [
+                        "python", 
+                        "/opt/app-root/src/tensorflowapp-sample/tensorflowapp-inference.py",
+                        "--prefix",
+                        "mnist-",
+                        "--inference_path",
+                        "/opt/app-root/src/input/test/test.png",
+                        "--saved_model_name",
+                        "mnist_saved_model",
+                        "/opt/app-root/src/output", 
+                        "/opt/app-root/src/output"],
+                    "env": [{
+                            "name": "NVIDIA_VISIBLE_DEVICES",
+                            "value": "all"
+                        },
+                        {
+                            "name": "NVIDIA_DRIVER_CAPABILITIES",
+                            "value": "compute,utility"
+                        },
+                        {
+                            "name": "NVIDIA_REQUIRE_CUDA",
+                            "value": "cuda>=9.0"
+                        }],
+                    "securityContext": {
+                        "allowPrivilegeEscalation": false,
+                        "capabilities": {
+                            "drop": [
+                                "ALL"
+                            ]
+                        }
+                    }
+                }]
+            }
+        }
+    }
+}

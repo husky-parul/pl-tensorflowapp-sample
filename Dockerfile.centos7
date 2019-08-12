@@ -7,15 +7,16 @@ MAINTAINER Parul Singh <parsingh@redhat.com>
 ENV APPROOT=/opt/app-root  VERSION="1"
 ENV PATH=${APPROOT}/bin:${PATH} HOME=${APPROOT}
 
-Run mkdir ${APPROOT}/bin
-RUN mkdir ${APPROOT}/etc/passwd
-
-RUN chmod -R u+x ${APPROOT}/bin && \
-    chgrp -R 0 ${APPROOT} && \
-    chmod -R g=u ${APPROOT} /etc/passwd
-
 COPY ./loop.sh /utils/
 RUN chmod +x /utils/loop.sh
+
+COPY ./.s2i/bin/ /usr/libexec/s2i
+COPY ./.s2i/bin/uid_entrypoint  ${APP_ROOT}/bin/
+
+RUN chmod -R u+x ${APP_ROOT}/bin && \
+    chgrp -R 0 ${APP_ROOT} && \
+    chmod -R g=u ${APP_ROOT} /etc/passwd
+
 
 ## LIBRARY_VERSION comes from template
 ENV BAZEL_VERSION=$LIBRARY_VERSION
@@ -36,7 +37,7 @@ ENV LANG en_US.UTF-8
 ENV LC_ALL=""
 ENV PYTHONIOENCODING UTF-8
 ENV NB_USER=default
-ENV NB_UID=1001
+ENV NB_UID=10001
 ENV PYTHON_BIN_PATH=/usr/bin/python 
 
 ENV PYTHON_LIB_PATH=/usr/lib64/python$PYTHON_VERSION/site-packages
@@ -62,55 +63,40 @@ RUN yum install -y yum-utils tar tree git curl wget \
     && pip install --upgrade pip==19.2.1 \
     && pip --no-cache-dir install ${TF_PACKAGE}
 
-RUN source scl_source enable rh-python36 && \
-    virtualenv /opt/app-root && \
-    chown -R 10001:0 /opt/app-root && \
-    fix-permissions /opt/app-root && \
-    rpm-file-permissions
 
-#RUN pip install Pillow numpy pypng chrisapp
+
+RUN pip install chrisapp pypng numpy Pillow
 
 
 
-# Make the default PWD somewhere that the user can write. This is
-# useful when connecting with 'oc run' and starting a 'spark-shell',
-# which will likely try to create files and directories in PWD and
-# error out if it cannot.
 
 ## Adding application code into the image
 
-RUN echo "---> Installing application source"
-COPY ["tensorflowapp-sample", "${APPROOT}/src/tensorflowapp-sample"]
-COPY ["requirements.txt", "${APPROOT}/src/tensorflowapp-sample"]
+#RUN echo "---> Installing application source"
+#COPY ["tensorflowapp-sample", "${APPROOT}/src/tensorflowapp-sample"]
+#COPY ["requirements.txt", "${APPROOT}/src/tensorflowapp-sample"]
 
-WORKDIR ${APP_ROOT}/src/tensorflowapp-sample
-RUN pip install -r requirements.txt
-RUN pip --no-cache-dir install ${TF_PACKAGE}
+#WORKDIR ${APP_ROOT}/src/tensorflowapp-sample
+#RUN pip install -r requirements.txt
+#RUN pip --no-cache-dir install ${TF_PACKAGE}
 
-RUN echo "---> Create output dir: /opt/app-root/src/output"
-RUN mkdir /opt/app-root/src/output
+#RUN echo "---> Create output dir: /opt/app-root/src/output"
+#RUN mkdir /opt/app-root/src/output
 
-RUN echo "---> Create input dir: /opt/app-root/src/input"
-RUN mkdir /opt/app-root/src/input
+#RUN echo "---> Create input dir: /opt/app-root/src/input"
+#RUN mkdir /opt/app-root/src/input
 
-COPY ["input", "/opt/app-root/src/input"]
-
-### user name recognition at runtime w/ an arbitrary uid - for OpenShift deployments
-
-RUN echo "---> Training the model"
-RUN exec python /opt/app-root/src/tensorflowapp-sample/tensorflowapp-training.py --prefix mnist- --saved_model_name mnist_saved_model /opt/app-root/src/input /opt/app-root/src/output
-
-RUN echo "---> Training complete"
-RUN echo "---> Model location: /opt/app-root/src/output/mnist_saved_model/1/"
+#COPY ["input", "/opt/app-root/src/input"]
 
 RUN chown -R 10001:10001 /opt/app-root/src/
 RUN umask 000
 RUN chmod -R u+w /opt/app-root/src/
 RUN chmod -R o+w /opt/app-root/src/
 
-### Containers should NOT run as root as a good practice
+RUN ls -la /opt/app-root/src/
 
 USER 10001
 WORKDIR ${APP_ROOT}
+ENTRYPOINT [ "uid_entrypoint" ]
 
 

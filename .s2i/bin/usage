@@ -1,4 +1,6 @@
 #!/bin/bash -e
+id
+whoami
 cat <<EOF
 This is the pl-tensorflowapp-sample-centos-python3 S2I image:
 To use it, install S2I: https://github.com/openshift/source-to-image
