@@ -7,6 +7,9 @@ MAINTAINER Parul Singh <parsingh@redhat.com>
 ENV APPROOT=/opt/app-root  VERSION="1"
 ENV PATH=${APPROOT}/bin:${PATH} HOME=${APPROOT}
 
+COPY ./loop.sh /utils/
+RUN chmod +x /utils/loop.sh
+
 COPY ./.s2i/bin/ /usr/libexec/s2i
 COPY ./.s2i/bin/uid_entrypoint  ${APP_ROOT}/bin/
 
@@ -60,7 +63,30 @@ RUN yum install -y yum-utils tar tree git curl wget \
     && pip install --upgrade pip==19.2.1 \
     && pip --no-cache-dir install ${TF_PACKAGE}
 
+
+
 RUN pip install chrisapp pypng numpy Pillow
+
+
+
+
+## Adding application code into the image
+
+#RUN echo "---> Installing application source"
+#COPY ["tensorflowapp-sample", "${APPROOT}/src/tensorflowapp-sample"]
+#COPY ["requirements.txt", "${APPROOT}/src/tensorflowapp-sample"]
+
+#WORKDIR ${APP_ROOT}/src/tensorflowapp-sample
+#RUN pip install -r requirements.txt
+#RUN pip --no-cache-dir install ${TF_PACKAGE}
+
+#RUN echo "---> Create output dir: /opt/app-root/src/output"
+#RUN mkdir /opt/app-root/src/output
+
+#RUN echo "---> Create input dir: /opt/app-root/src/input"
+#RUN mkdir /opt/app-root/src/input
+
+#COPY ["input", "/opt/app-root/src/input"]
 
 RUN chown -R 10001:10001 /opt/app-root/src/
 RUN umask 000
