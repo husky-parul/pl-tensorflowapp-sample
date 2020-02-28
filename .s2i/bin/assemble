@@ -8,9 +8,14 @@
 #
 
 # If the 'billrainford/tensorflowapp-sample' assemble script is executed with the '-h' flag, print the usage.
-echo "This is start of assemble script"
+echo "---> assemble script started"
 
 set -ex
+
+echo "---> Running as UID:"
+echo $UID
+id
+whoami
 
 if [[ "$1" == "-h" ]]; then
 	exec /tmp/scripts/usage
@@ -45,3 +50,5 @@ echo "---> Model location: /opt/app-root/src/output/my_saved_model/1/"
 
 echo "---> Check model"
 ls -la /opt/app-root/src/output/my_saved_model/1/
+
+echo "---> assemble script finished"

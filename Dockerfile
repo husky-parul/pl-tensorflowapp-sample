@@ -4,6 +4,8 @@
 FROM centos/s2i-base-centos7
 MAINTAINER fnndsc "dev@babymri.org"
 
+RUN echo "-------------------------->>"
+
 ENV PYTHON_VERSION=3.6 \
     PATH=$HOME/.local/bin/:$PATH \
     PYTHONUNBUFFERED=1 \
@@ -38,13 +40,20 @@ RUN yum install -y centos-release-scl-rh && \
 RUN source scl_source enable rh-python36 && \
     virtualenv /opt/app-root && \
     chown -R 1001:0 /opt/app-root && \
+    mkdir /tmp/scripts && \
+    chown -R 1001:0 /tmp/scripts && \
     fix-permissions /opt/app-root && \
     rpm-file-permissions
 
 COPY ./.s2i/bin/usage /tmp/scripts/
+COPY ./.s2i/bin/uid_entrypoint  /tmp/scripts/
 
 RUN ls -la /tmp/scripts
 
 COPY ["requirements.txt", "/opt/app-root/src/"]
 RUN pip install --upgrade pip
 RUN pip install -r requirements.txt --default-timeout=100
+
+USER 1001
+ENTRYPOINT [ "/tmp/scripts/uid_entrypoint" ]
+CMD ["/tmp/scripts/usage"]

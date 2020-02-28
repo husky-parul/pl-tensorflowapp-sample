@@ -33,7 +33,7 @@ From the root directory of the git repository, run the following command to buil
 
 The default image built will be named:
 
-``pl-tensorflowapp-sample-centos-python3`
+``pl-tensorflowapp-sample-centos-python3``
 
 This default container image is a CentOS image that includes Python3.
 

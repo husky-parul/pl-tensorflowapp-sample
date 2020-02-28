@@ -8,4 +8,22 @@
 #
 
 
-echo "This is run script"
+echo "---> run script started"
+set -e
+id
+whoami
+
+echo "Running app..."
+
+echo "PWD = "$PWD
+echo "ls -l /opt/app-root/src/"
+ls -l /opt/app-root/src/
+
+echo "ls -l /opt/app-root/"
+ls -l /opt/app-root/
+
+echo "---> Running Inference:"
+exec python /opt/app-root/src/tensorflowapp-sample/tensorflowapp-inference.py --prefix mnist- --inference_path /opt/app-root/src/input/test/test.png --saved_model_name my_saved_model /opt/app-root/src/output /opt/app-root/src/output
+
+echo "---> run script finished"
+
